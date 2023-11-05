@@ -8,7 +8,7 @@ The core idea is that this project provides an Authorizer implementation that th
 
 > **WARNING**: This is a prototype which is **not** (at the time of writing) 100% feature-compatible with neither the RBAC or the Node authorizer (although close), and this project is **not in any way production-ready**. Use it at your own risk.
 
-The work in this repository is described and core idea is proposed in the Cloud Native Rejekts talk **TODO link**.
+The work in this repository is described and core idea is proposed in the Cloud Native Rejekts talk, you can watch it live here: https://www.youtube.com/watch?v=tWWBzsZLrIw
 
 The goal here is to discuss in the cloud native/Kubernetes community how we can apply the great recent developments of open source ReBAC projects.
 
