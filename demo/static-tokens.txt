@@ -1,0 +1,3 @@
+086adda9-1a99-428c-985b-89429d5307ce,controller-superuser,uid123,"system:masters"
+54dd3d9c-6e38-4423-8ae9-678ebc566913,normal-user,uid1234,"foo-group"
+d6ddaef2-0ad0-425f-883a-7bfef7875c37,system:node:foo-node,uid12345,"nogroup"

@@ -1,0 +1,899 @@
+{
+  "schema_version": "1.1",
+  "type_definitions": [
+    {
+      "type": "clusterrole",
+      "relations": {
+        "assignee": {
+          "this": {}
+        }
+      },
+      "metadata": {
+        "relations": {
+          "assignee": {
+            "directly_related_user_types": [
+              {
+                "type": "clusterrolebinding",
+                "relation": "assignee"
+              },
+              {
+                "type": "clusterrole_label",
+                "relation": "selects"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "clusterrole_label",
+      "relations": {
+        "selects": {
+          "this": {}
+        }
+      },
+      "metadata": {
+        "relations": {
+          "selects": {
+            "directly_related_user_types": [
+              {
+                "type": "clusterrole",
+                "relation": "assignee"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "clusterrolebinding",
+      "relations": {
+        "assignee": {
+          "this": {}
+        }
+      },
+      "metadata": {
+        "relations": {
+          "assignee": {
+            "directly_related_user_types": [
+              {
+                "type": "user"
+              },
+              {
+                "type": "group",
+                "relation": "members"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "core.node",
+      "relations": {
+        "get": {
+          "this": {}
+        }
+      },
+      "metadata": {
+        "relations": {
+          "get": {
+            "directly_related_user_types": [
+              {
+                "type": "user"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "core.pod",
+      "relations": {
+        "get": {
+          "tupleToUserset": {
+            "tupleset": {
+              "relation": "node_to_pod"
+            },
+            "computedUserset": {
+              "relation": "get"
+            }
+          }
+        },
+        "node_to_pod": {
+          "this": {}
+        }
+      },
+      "metadata": {
+        "relations": {
+          "node_to_pod": {
+            "directly_related_user_types": [
+              {
+                "type": "core.node"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "core.secret",
+      "relations": {
+        "get": {
+          "tupleToUserset": {
+            "tupleset": {
+              "relation": "pod_to_secret"
+            },
+            "computedUserset": {
+              "relation": "get"
+            }
+          }
+        },
+        "pod_to_secret": {
+          "this": {}
+        }
+      },
+      "metadata": {
+        "relations": {
+          "pod_to_secret": {
+            "directly_related_user_types": [
+              {
+                "type": "core.pod"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "group",
+      "relations": {
+        "members": {
+          "this": {}
+        }
+      },
+      "metadata": {
+        "relations": {
+          "members": {
+            "directly_related_user_types": [
+              {
+                "type": "user"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "namespace",
+      "relations": {
+        "operates_in": {
+          "this": {}
+        }
+      },
+      "metadata": {
+        "relations": {
+          "operates_in": {
+            "directly_related_user_types": [
+              {
+                "type": "user"
+              },
+              {
+                "type": "group",
+                "relation": "members"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "nonresourceurls",
+      "relations": {
+        "anyverb": {
+          "union": {
+            "child": [
+              {
+                "this": {}
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "wildcardmatch"
+                  },
+                  "computedUserset": {
+                    "relation": "anyverb"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "get": {
+          "union": {
+            "child": [
+              {
+                "this": {}
+              },
+              {
+                "computedUserset": {
+                  "relation": "anyverb"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "wildcardmatch"
+                  },
+                  "computedUserset": {
+                    "relation": "get"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "wildcardmatch": {
+          "this": {}
+        }
+      },
+      "metadata": {
+        "relations": {
+          "anyverb": {
+            "directly_related_user_types": [
+              {
+                "type": "clusterrole",
+                "relation": "assignee"
+              }
+            ]
+          },
+          "get": {
+            "directly_related_user_types": [
+              {
+                "type": "clusterrole",
+                "relation": "assignee"
+              }
+            ]
+          },
+          "wildcardmatch": {
+            "directly_related_user_types": [
+              {
+                "type": "nonresourceurls"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "resource",
+      "relations": {
+        "anyverb": {
+          "this": {}
+        },
+        "create": {
+          "union": {
+            "child": [
+              {
+                "this": {}
+              },
+              {
+                "computedUserset": {
+                  "relation": "anyverb"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "wildcardmatch"
+                  },
+                  "computedUserset": {
+                    "relation": "create"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "delete": {
+          "union": {
+            "child": [
+              {
+                "this": {}
+              },
+              {
+                "computedUserset": {
+                  "relation": "anyverb"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "wildcardmatch"
+                  },
+                  "computedUserset": {
+                    "relation": "delete"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "deletecollection": {
+          "union": {
+            "child": [
+              {
+                "this": {}
+              },
+              {
+                "computedUserset": {
+                  "relation": "anyverb"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "wildcardmatch"
+                  },
+                  "computedUserset": {
+                    "relation": "deletecollection"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "get": {
+          "union": {
+            "child": [
+              {
+                "this": {}
+              },
+              {
+                "computedUserset": {
+                  "relation": "anyverb"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "wildcardmatch"
+                  },
+                  "computedUserset": {
+                    "relation": "get"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "list": {
+          "union": {
+            "child": [
+              {
+                "this": {}
+              },
+              {
+                "computedUserset": {
+                  "relation": "anyverb"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "wildcardmatch"
+                  },
+                  "computedUserset": {
+                    "relation": "list"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "patch": {
+          "union": {
+            "child": [
+              {
+                "this": {}
+              },
+              {
+                "computedUserset": {
+                  "relation": "anyverb"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "wildcardmatch"
+                  },
+                  "computedUserset": {
+                    "relation": "patch"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "update": {
+          "union": {
+            "child": [
+              {
+                "this": {}
+              },
+              {
+                "computedUserset": {
+                  "relation": "anyverb"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "wildcardmatch"
+                  },
+                  "computedUserset": {
+                    "relation": "update"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "watch": {
+          "union": {
+            "child": [
+              {
+                "this": {}
+              },
+              {
+                "computedUserset": {
+                  "relation": "anyverb"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "wildcardmatch"
+                  },
+                  "computedUserset": {
+                    "relation": "watch"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "wildcardmatch": {
+          "this": {}
+        }
+      },
+      "metadata": {
+        "relations": {
+          "anyverb": {
+            "directly_related_user_types": [
+              {
+                "type": "role",
+                "relation": "assignee"
+              },
+              {
+                "type": "clusterrole",
+                "relation": "assignee"
+              }
+            ]
+          },
+          "create": {
+            "directly_related_user_types": [
+              {
+                "type": "role",
+                "relation": "assignee"
+              },
+              {
+                "type": "clusterrole",
+                "relation": "assignee"
+              }
+            ]
+          },
+          "delete": {
+            "directly_related_user_types": [
+              {
+                "type": "role",
+                "relation": "assignee"
+              },
+              {
+                "type": "clusterrole",
+                "relation": "assignee"
+              }
+            ]
+          },
+          "deletecollection": {
+            "directly_related_user_types": [
+              {
+                "type": "role",
+                "relation": "assignee"
+              },
+              {
+                "type": "clusterrole",
+                "relation": "assignee"
+              }
+            ]
+          },
+          "get": {
+            "directly_related_user_types": [
+              {
+                "type": "role",
+                "relation": "assignee"
+              },
+              {
+                "type": "clusterrole",
+                "relation": "assignee"
+              }
+            ]
+          },
+          "list": {
+            "directly_related_user_types": [
+              {
+                "type": "role",
+                "relation": "assignee"
+              },
+              {
+                "type": "clusterrole",
+                "relation": "assignee"
+              }
+            ]
+          },
+          "patch": {
+            "directly_related_user_types": [
+              {
+                "type": "role",
+                "relation": "assignee"
+              },
+              {
+                "type": "clusterrole",
+                "relation": "assignee"
+              }
+            ]
+          },
+          "update": {
+            "directly_related_user_types": [
+              {
+                "type": "role",
+                "relation": "assignee"
+              },
+              {
+                "type": "clusterrole",
+                "relation": "assignee"
+              }
+            ]
+          },
+          "watch": {
+            "directly_related_user_types": [
+              {
+                "type": "role",
+                "relation": "assignee"
+              },
+              {
+                "type": "clusterrole",
+                "relation": "assignee"
+              }
+            ]
+          },
+          "wildcardmatch": {
+            "directly_related_user_types": [
+              {
+                "type": "resource"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "resourceinstance",
+      "relations": {
+        "anyverb": {
+          "union": {
+            "child": [
+              {
+                "this": {}
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "resourcematch"
+                  },
+                  "computedUserset": {
+                    "relation": "anyverb"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "delete": {
+          "union": {
+            "child": [
+              {
+                "this": {}
+              },
+              {
+                "computedUserset": {
+                  "relation": "anyverb"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "resourcematch"
+                  },
+                  "computedUserset": {
+                    "relation": "delete"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "get": {
+          "union": {
+            "child": [
+              {
+                "this": {}
+              },
+              {
+                "computedUserset": {
+                  "relation": "anyverb"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "resourcematch"
+                  },
+                  "computedUserset": {
+                    "relation": "get"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "patch": {
+          "union": {
+            "child": [
+              {
+                "this": {}
+              },
+              {
+                "computedUserset": {
+                  "relation": "anyverb"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "resourcematch"
+                  },
+                  "computedUserset": {
+                    "relation": "patch"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "resourcematch": {
+          "this": {}
+        },
+        "update": {
+          "union": {
+            "child": [
+              {
+                "this": {}
+              },
+              {
+                "computedUserset": {
+                  "relation": "anyverb"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "resourcematch"
+                  },
+                  "computedUserset": {
+                    "relation": "update"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "watch": {
+          "union": {
+            "child": [
+              {
+                "this": {}
+              },
+              {
+                "computedUserset": {
+                  "relation": "anyverb"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "resourcematch"
+                  },
+                  "computedUserset": {
+                    "relation": "watch"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "metadata": {
+        "relations": {
+          "anyverb": {
+            "directly_related_user_types": [
+              {
+                "type": "role",
+                "relation": "assignee"
+              },
+              {
+                "type": "clusterrole",
+                "relation": "assignee"
+              }
+            ]
+          },
+          "delete": {
+            "directly_related_user_types": [
+              {
+                "type": "role",
+                "relation": "assignee"
+              },
+              {
+                "type": "clusterrole",
+                "relation": "assignee"
+              }
+            ]
+          },
+          "get": {
+            "directly_related_user_types": [
+              {
+                "type": "role",
+                "relation": "assignee"
+              },
+              {
+                "type": "clusterrole",
+                "relation": "assignee"
+              }
+            ]
+          },
+          "patch": {
+            "directly_related_user_types": [
+              {
+                "type": "role",
+                "relation": "assignee"
+              },
+              {
+                "type": "clusterrole",
+                "relation": "assignee"
+              }
+            ]
+          },
+          "resourcematch": {
+            "directly_related_user_types": [
+              {
+                "type": "resource"
+              }
+            ]
+          },
+          "update": {
+            "directly_related_user_types": [
+              {
+                "type": "role",
+                "relation": "assignee"
+              },
+              {
+                "type": "clusterrole",
+                "relation": "assignee"
+              }
+            ]
+          },
+          "watch": {
+            "directly_related_user_types": [
+              {
+                "type": "role",
+                "relation": "assignee"
+              },
+              {
+                "type": "clusterrole",
+                "relation": "assignee"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "role",
+      "relations": {
+        "assignee": {
+          "intersection": {
+            "child": [
+              {
+                "computedUserset": {
+                  "relation": "namespaced_assignee"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "contains"
+                  },
+                  "computedUserset": {
+                    "relation": "operates_in"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "contains": {
+          "this": {}
+        },
+        "namespaced_assignee": {
+          "this": {}
+        }
+      },
+      "metadata": {
+        "relations": {
+          "contains": {
+            "directly_related_user_types": [
+              {
+                "type": "namespace"
+              }
+            ]
+          },
+          "namespaced_assignee": {
+            "directly_related_user_types": [
+              {
+                "type": "rolebinding",
+                "relation": "namespaced_assignee"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "rolebinding",
+      "relations": {
+        "namespaced_assignee": {
+          "this": {}
+        }
+      },
+      "metadata": {
+        "relations": {
+          "namespaced_assignee": {
+            "directly_related_user_types": [
+              {
+                "type": "user"
+              },
+              {
+                "type": "group",
+                "relation": "members"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "user",
+      "metadata": {}
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+with-expecter: True
+inpackage: True
+dir: '{{ replaceAll .InterfaceDirRelative "internal" "internal_" }}'
+mockname: "Mock{{.InterfaceName}}"
+filename: "mock_{{.InterfaceName}}.go"
+packages:
+  github.com/luxas/kube-rebac-authorizer/pkg/zanzibar:
+    config: {}
+    interfaces:
+      TupleStore: {}

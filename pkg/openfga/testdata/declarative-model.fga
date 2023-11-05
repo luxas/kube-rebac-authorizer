@@ -1,0 +1,77 @@
+model
+  schema 1.1
+
+type clusterrole
+  relations
+    define assignee: [clusterrolebinding#assignee, clusterrole_label#selects]
+
+type clusterrole_label
+  relations
+    define selects: [clusterrole#assignee]
+
+type clusterrolebinding
+  relations
+    define assignee: [user, group#members]
+
+type core.node
+  relations
+    define get: [user]
+
+type core.pod
+  relations
+    define get: get from node_to_pod
+    define node_to_pod: [core.node]
+
+type core.secret
+  relations
+    define get: get from pod_to_secret
+    define pod_to_secret: [core.pod]
+
+type group
+  relations
+    define members: [user]
+
+type namespace
+  relations
+    define operates_in: [user, group#members]
+
+type nonresourceurls
+  relations
+    define anyverb: [clusterrole#assignee] or anyverb from wildcardmatch
+    define get: [clusterrole#assignee] or anyverb or get from wildcardmatch
+    define wildcardmatch: [nonresourceurls]
+
+type resource
+  relations
+    define anyverb: [role#assignee, clusterrole#assignee]
+    define create: [role#assignee, clusterrole#assignee] or anyverb or create from wildcardmatch
+    define delete: [role#assignee, clusterrole#assignee] or anyverb or delete from wildcardmatch
+    define deletecollection: [role#assignee, clusterrole#assignee] or anyverb or deletecollection from wildcardmatch
+    define get: [role#assignee, clusterrole#assignee] or anyverb or get from wildcardmatch
+    define list: [role#assignee, clusterrole#assignee] or anyverb or list from wildcardmatch
+    define patch: [role#assignee, clusterrole#assignee] or anyverb or patch from wildcardmatch
+    define update: [role#assignee, clusterrole#assignee] or anyverb or update from wildcardmatch
+    define watch: [role#assignee, clusterrole#assignee] or anyverb or watch from wildcardmatch
+    define wildcardmatch: [resource]
+
+type resourceinstance
+  relations
+    define anyverb: [role#assignee, clusterrole#assignee] or anyverb from resourcematch
+    define delete: [role#assignee, clusterrole#assignee] or anyverb or delete from resourcematch
+    define get: [role#assignee, clusterrole#assignee] or anyverb or get from resourcematch
+    define patch: [role#assignee, clusterrole#assignee] or anyverb or patch from resourcematch
+    define resourcematch: [resource]
+    define update: [role#assignee, clusterrole#assignee] or anyverb or update from resourcematch
+    define watch: [role#assignee, clusterrole#assignee] or anyverb or watch from resourcematch
+
+type role
+  relations
+    define assignee: namespaced_assignee and operates_in from contains
+    define contains: [namespace]
+    define namespaced_assignee: [rolebinding#namespaced_assignee]
+
+type rolebinding
+  relations
+    define namespaced_assignee: [user, group#members]
+
+type user

@@ -1,0 +1,7 @@
+# Note: Remember to delete old data from OpenFGA from this store if you restart the authorizer
+# and want to start clean
+storeName: kube-rebac-authorizer
+openFGAClient:
+  address: openfga:8081 # This uses the docker/podman-compose internal network.
+httpsCertDir: /demo/certs
+reconcileRBAC: true
