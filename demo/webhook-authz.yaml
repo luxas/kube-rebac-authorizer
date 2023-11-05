@@ -1,0 +1,26 @@
+# Webhook Authorization configuration for Kubernetes API server
+# See 
+apiVersion: v1
+kind: Config
+# where to find the Webhook authorizer
+clusters:
+- name: rebac-authorizer
+  cluster:
+    certificate-authority: /demo/certs/ca.crt
+    # URL of remote service to query. Must use 'https'. May not include parameters.
+    server: https://authorizer:9443/authorize
+
+# users refers to the API Server's webhook configuration.
+users:
+- name: api-server-client
+  user:
+    client-certificate: /demo/certs/apiserver-authorizer-client.crt  # cert for the webhook plugin to use
+    client-key: /demo/certs/apiserver-authorizer-client.key          # key matching the cert
+
+# kubeconfig files require a context. Provide one for the API Server.
+current-context: webhook
+contexts:
+- context:
+    cluster: rebac-authorizer
+    user: api-server-client
+  name: webhook

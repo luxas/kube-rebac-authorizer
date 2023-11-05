@@ -1,0 +1,223 @@
+{
+  "schema_version": "1.1",
+  "type_definitions": [
+    {
+      "type": "user"
+    },
+    {
+      "type": "group",
+      "relations": {
+        "members": {
+          "this": {}
+        }
+      },
+      "metadata": {
+        "relations": {
+          "members": {
+            "directly_related_user_types": [
+              {
+                "type": "user"
+              },
+              {
+                "type": "user",
+                "wildcard": {}
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "namespace",
+      "relations": {
+        "operates_in": {
+          "this": {}
+        }
+      },
+      "metadata": {
+        "relations": {
+          "operates_in": {
+            "directly_related_user_types": [
+              {
+                "type": "user"
+              },
+              {
+                "type": "group",
+                "relation": "members"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "rolebinding",
+      "relations": {
+        "namespaced_assignee": {
+          "this": {}
+        }
+      },
+      "metadata": {
+        "relations": {
+          "namespaced_assignee": {
+            "directly_related_user_types": [
+              {
+                "type": "user"
+              },
+              {
+                "type": "group",
+                "relation": "members"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "role",
+      "relations": {
+        "assignee": {
+          "intersection": {
+            "child": [
+              {
+                "computedUserset": {
+                  "relation": "namespaced_assignee"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "contains"
+                  },
+                  "computedUserset": {
+                    "relation": "operates_in"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "contains": {
+          "this": {}
+        },
+        "namespaced_assignee": {
+          "this": {}
+        }
+      },
+      "metadata": {
+        "relations": {
+          "assignee": {},
+          "contains": {
+            "directly_related_user_types": [
+              {
+                "type": "namespace"
+              }
+            ]
+          },
+          "namespaced_assignee": {
+            "directly_related_user_types": [
+              {
+                "type": "rolebinding",
+                "relation": "namespaced_assignee"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "resource",
+      "relations": {
+        "anyverb": {
+          "this": {}
+        },
+        "get": {
+          "union": {
+            "child": [
+              {
+                "this": {}
+              },
+              {
+                "computedUserset": {
+                  "relation": "anyverb"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "wildcardmatch"
+                  },
+                  "computedUserset": {
+                    "relation": "get"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "list": {
+          "union": {
+            "child": [
+              {
+                "this": {}
+              },
+              {
+                "computedUserset": {
+                  "relation": "anyverb"
+                }
+              },
+              {
+                "tupleToUserset": {
+                  "tupleset": {
+                    "relation": "wildcardmatch"
+                  },
+                  "computedUserset": {
+                    "relation": "list"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "wildcardmatch": {
+          "this": {}
+        }
+      },
+      "metadata": {
+        "relations": {
+          "anyverb": {
+            "directly_related_user_types": [
+              {
+                "type": "role",
+                "relation": "assignee"
+              }
+            ]
+          },
+          "get": {
+            "directly_related_user_types": [
+              {
+                "type": "role",
+                "relation": "assignee"
+              }
+            ]
+          },
+          "list": {
+            "directly_related_user_types": [
+              {
+                "type": "role",
+                "relation": "assignee"
+              }
+            ]
+          },
+          "wildcardmatch": {
+            "directly_related_user_types": [
+              {
+                "type": "resource"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}
