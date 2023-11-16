@@ -14,11 +14,16 @@ The goal here is to discuss in the cloud native/Kubernetes community how we can 
 
 ## What is Relation Based Access Control?
 
-ReBAC is an evolution of Role-Based Access Control and Attribute-Based Access Control, and was popularized by the **Google Zanzibar paper TODO Link**. The core idea is that the authorization state (who should have access to what) is modelled as a graph with **nodes** (for example, users and documents) and **relations** (directed edges) between them (user named `lucas` is related to document `secret` through the relation `read`).
+ReBAC is an evolution of Role-Based Access Control and Attribute-Based Access Control, and was popularized by the **Google Zanzibar paper TODO Link**. The core idea is that the authorization state (who should have access to what [I'd rephrase this as: can X do Y on resource Z or something like that. Problem is with the `access` baked into the statement]) is modelled as a graph with **nodes** (for example, users and documents) and **relations** (directed edges) between them (user named `lucas` is related to document `secret` through the relation `read`). TODO(vaikas): Should we tighten this up. Later in the doc it uses `access` instead of `read` (slightly related to comment above).
+
+```mermaid
+graph LR
+  lucas -- read --> secret
+```
 
 A ReBAC service, like the CNCF project OpenFGA **TODO link** used here, provides an API to read and write what the authorization state looks like (what nodes and edges are there), define a schema/model for _how_ the graph can be built up, and for querying the graph (e.g. **does** this user node have access to this document node? or **what** documents does this user have access to through this relation?).
 
-ReBAC can be an effective tool combatting the Roles Explosion **TODO link** phenomenon often seen in RBAC setups, practically limiting the usefulness of RBAC deployments, although in theory it would be possible to specify more fine-grained RBAC definitions than practically doable. In order to understand the true usefulness of ReBAC, however, let's dive into how the authorization state is specified! 
+ReBAC can be an effective tool combatting the Roles Explosion **TODO link** phenomenon often seen in RBAC setups, practically limiting the usefulness of RBAC deployments, although in theory it would be possible to specify more fine-grained RBAC definitions than practically doable. In order to understand the true usefulness of ReBAC, however, let's dive into how the authorization state is specified!
 
 ### Authorization Model
 
@@ -93,7 +98,7 @@ On of the first stages that happen for a API server request, is authentication, 
 - a username
 - a set of groups
 - a UID
-- and possibly, a map of extra string-string values for custom parameters 
+- and possibly, a map of extra string-string values for custom parameters
 
 ### Kubernetes Authorization
 
@@ -166,7 +171,7 @@ Let's see an example on how to map RBAC API objects to Tuples, and what kind of 
   - Node ID: As the `ClusterRole` is cluster-scoped, we can only use the name directly, as it is guaranteed to be unique in the cluster. We might need to escape some characters depending on the ReBAC implementation.
   - Loop each policy rule, loop rule's `apiGroups`, loop rule's `verbs`, loop rule's `resources`, and:
     - If the rule is for a collection (resourceNames list is empty): create a Tuple from `clusterrole:<name>#assignee` to `resource:<apiGroup>/<resource>` through the `<verb>` relation.
-    - If the rule is for individual, named API objects: create a Tuple from `clusterrole:<name>#assignee` to `resourceinstance:<apiGroup>/<resource>/<object-name>`, which is a more specific/fine-grained type with three and not two pieces of data, compared to `resource`. 
+    - If the rule is for individual, named API objects: create a Tuple from `clusterrole:<name>#assignee` to `resourceinstance:<apiGroup>/<resource>/<object-name>`, which is a more specific/fine-grained type with three and not two pieces of data, compared to `resource`.
 
 The authorizer would now be along the lines of:
 
@@ -259,7 +264,7 @@ The second time we reconcile, say the ClusterRole has not changed. In order to b
 - {`clusterrolebinding:foo#assignee`, `assignee`, `clusterrole:bar`}
 - {`clusterrole:bar#assignee`, `get`, `resource:apps.deployments`}
 
-Oh, we got the clusterrolebinding -> clusterrole tuple as well! However, the ClusterRole has no knowledge about to which bindings it is bound, so it cannot generate tuples for those. Thus, unless we filter out the clusterrolebinding -> clusterrole tuple due to that that relation is not "owned" by the ClusterRole API object, we will either not be able to delete stale tuples, or we delete all tuples not known about from a given type's perspective. 
+Oh, we got the clusterrolebinding -> clusterrole tuple as well! However, the ClusterRole has no knowledge about to which bindings it is bound, so it cannot generate tuples for those. Thus, unless we filter out the clusterrolebinding -> clusterrole tuple due to that that relation is not "owned" by the ClusterRole API object, we will either not be able to delete stale tuples, or we delete all tuples not known about from a given type's perspective.
 
 TODO: talk about Kubernetes finalizers and whole object deletions.
 
@@ -277,7 +282,7 @@ TODO: Add picture.
 - Controller, Authorizer, OpenFGA all separate binaries
 - Controller and Authorizer in the same binary, OpenFGA separate binary
 - Controller, Authorizer, OpenFGA all in the same binary
-- kcp, Controller, Authorizer, OpenFGA all in the same binary for a generic control plane implementation with generic graph-based authorization, just like Kubernetes + Node + RBAC authorizers, but more extendable. 
+- kcp, Controller, Authorizer, OpenFGA all in the same binary for a generic control plane implementation with generic graph-based authorization, just like Kubernetes + Node + RBAC authorizers, but more extendable.
 
 OpenFGA can be deployed with persistent storage (a SQL database, e.g. MySQL or Postgres) or used with an in-memory graph.
 
@@ -350,6 +355,7 @@ EDITOR=nano kubectl edit clusterrole view-pods
 
 kubectl config use-context normal-user
 
+(this seems odd. I can get all the pods, but not a pod by name. I would naively expect that one would be able to get a specific pod but not all. Just thinking on user experience)
 # allowed
 kubectl get pods
 # not anymore allowed
@@ -432,7 +438,7 @@ Thanks to Jon and Andres from the OpenFGA team that helped with questions about 
 
 Project generated with [Kubebuilder](https://book.kubebuilder.io/introduction.html)
 
-The authorizion webhook implementation is heavily inspired by the authentication webhook in controller-runtime project. If desired by the community, I can contribute that part upstream.
+The authorization webhook implementation is heavily inspired by the authentication webhook in controller-runtime project. If desired by the community, I can contribute that part upstream.
 
 While the RBAC reconciliation code is not easily vendorable from Kubernetes, I need to carry an extracted version of the RBAC storage in a forked repo. This file is outside of the scope of the license and copyright of this project.
 
