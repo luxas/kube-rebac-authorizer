@@ -2,23 +2,52 @@
 
 Welcome to a prototype of how to integrate Kubernetes Authorization with Relation-Based Access Control (ReBAC)!
 
-The core idea is that this project provides an Authorizer implementation that the Kubernetes API server can webhook to, replacing the need for both the RBAC authorizer and Node authorizer, deployed in practically all Kubernetes clusters, while offering a wider, general-purpose, way to write authorization rules for your Kubernetes cluster or kcp **TODO link** generic control plane.
+The core idea is that this project provides an Authorizer implementation that the Kubernetes API server can webhook to, replacing the need for both the RBAC authorizer and Node authorizer, deployed in practically all Kubernetes clusters, while offering a wider, general-purpose, way to write authorization rules for your Kubernetes cluster or [kcp-like][kcp] generic control planes.
 
-> **IMPORTANT**: While this project demonstrates a re-implementation of the RBAC and Node authorizers in Kubernetes, the aim is not to make those obsolete in any way. The aim is to demonstrate how the concepts relate, showcase that ReBAC can offer what we already have, and more, and prototype with making Kubernetes' (in-core and out-of-core) authorization primitives even better in the future.
+The work in this repository is described and core idea is proposed in a [Cloud Native Rejekts talk][rejekts-talk] November 5, 2023.
 
-> **WARNING**: This is a prototype which is **not** (at the time of writing) 100% feature-compatible with neither the RBAC or the Node authorizer (although close), and this project is **not in any way production-ready**. Use it at your own risk.
+I highly recommend **watching the talk here before** reading the rest of the README: **https://www.youtube.com/live/tWWBzsZLrIw?t=396**
 
-The work in this repository is described and core idea is proposed in the Cloud Native Rejekts talk, you can watch it live here: https://www.youtube.com/watch?v=tWWBzsZLrIw
+I also highly recommend checking out the talk presentation: https://speakerdeck.com/luxas/beyond-rbac-implementing-relation-based-access-control-for-kubernetes-with-openfga
+
+## :star: Features
+
+This can yield features such as:
+
+- **Intuitive Integration with non-Kubernetes sources**: Utilizing the policy data that you have specified in Kubernetes is great, but sometimes you have other sources of data affecting the authorization state such as user groups in LDAP/GitHub/etc., cloud IAM roles, or team permissions in your own system's databases, of which all systems "speak different languages" when it comes to authorization. Using ReBAC, you now have a **"lingua franca"** for which you can one-way sync (project, map, reconcile) all your other authorative permission and user data to the ReBAC graph data model, and make authorization decisions based on relations, without having to move the data from their "native places".
+- **Natively-supported Deny Roles:** The Kubernetes authorizer framework itself supports Denying specific requests, but RBAC is only additive. With the ReBAC approach, we can natively and intuitively integrate Deny roles.
+- **Superset of RBAC:** Everything you can do with RBAC today, you can do with ReBAC! This Authorizer is also compatible with [Kubernetes RBAC types][kube-docs-rbac]. However, you can do much more than with only RBAC.
+- **Inheritance**: You can now specify, for example, that if a user can access a given API object in the Kubernetes API (e.g. a `Deployment`), then it can also access all of the child `ReplicaSet`s and grandchild `Pod`s, without having to grant access the user access to list all ReplicaSets or Pods. Now, this specific Deployment-ReplicaSet-Pod example is not maybe as useful in practice, but what is, for example, is to grant a user or controller only access to such `Secret`s that given, say `Ingress` or `Gateway` objects reference, and not all `Secrets` cluster-wide (a privilege real serious if the used credential is compromised, or for [confused deputy scenarios][wikipedia-confused-deputy]).
+
+
+[kcp]: <https://www.kcp.io/>
+[rejekts-talk]: <https://cfp.cloud-native.rejekts.io/cloud-native-rejekts-na-chicago-2023/talk/JVPXE3/>
+[kube-docs-rbac]: <https://kubernetes.io/docs/reference/access-authn-authz/rbac/>
+[sig-auth]: <https://github.com/kubernetes/community/tree/master/sig-auth>
+[openfga]: <https://openfga.dev/>
+[zanzibar-paper]: <https://research.google/pubs/pub48190/>
+[wikipedia-confused-deputy]: <https://en.wikipedia.org/wiki/Confused_deputy_problem>
+[roles-explosion]: <https://knight.segfaults.net/papers/20100502%20-%20Aaron%20Elliott%20-%20WOLRDCOMP%202010%20Paper.pdf>
+
+> :handshake: **IMPORTANT**: While this project demonstrates a re-implementation of the RBAC and Node authorizers in Kubernetes, the aim is not to make those obsolete in any way. The aim is to demonstrate how the concepts relate, showcase that ReBAC can offer what we already have, and more, and prototype with making Kubernetes' (in-core and out-of-core) authorization primitives even better in the future.
+
+> :warning: **WARNING**: This is a prototype which is **not** (at the time of writing) 100% feature-compatible with neither the RBAC or the Node authorizer (although close), and this project is **not in any way production-ready**. Use it at your own risk.
+
+## Looking for feedback!
 
 The goal here is to discuss in the cloud native/Kubernetes community how we can apply the great recent developments of open source ReBAC projects.
 
+:rocket: Get in touch! I'm looking for feedback on the approach. I'm planning to bring this to [Kubernetes Special Interest Group for Authorization][sig-auth] soon.
+
+You can open an issue, star :star: this repo so I see you are interested, or reach out to me on Twitter (I'm @kubernetesonarm) or the CNCF or Kubernetes Slacks (I'm @luxas). Looking forward to speak with you!
+
 ## What is Relation Based Access Control?
 
-ReBAC is an evolution of Role-Based Access Control and Attribute-Based Access Control, and was popularized by the **Google Zanzibar paper TODO Link**. The core idea is that the authorization state (who should have access to what) is modelled as a graph with **nodes** (for example, users and documents) and **relations** (directed edges) between them (user named `lucas` is related to document `secret` through the relation `read`).
+ReBAC is an evolution of Role-Based Access Control and Attribute-Based Access Control, and was popularized by the [Google Zanzibar paper][zanzibar-paper]. The core idea is that the authorization state (who should have access to what) is modelled as a graph with **nodes** (for example, users and documents) and **relations** (directed edges) between them (user named `lucas` is related to document `secret` through the relation `read`).
 
-A ReBAC service, like the CNCF project OpenFGA **TODO link** used here, provides an API to read and write what the authorization state looks like (what nodes and edges are there), define a schema/model for _how_ the graph can be built up, and for querying the graph (e.g. **does** this user node have access to this document node? or **what** documents does this user have access to through this relation?).
+A ReBAC service, like the CNCF project [OpenFGA][openfga] used here, provides an API to read and write what the authorization state looks like (what nodes and edges are there), define a schema/model for _how_ the graph can be built up, and for querying the graph (e.g. **does** this user node have access to this document node? or **what** documents does this user have access to through this relation?).
 
-ReBAC can be an effective tool combatting the Roles Explosion **TODO link** phenomenon often seen in RBAC setups, practically limiting the usefulness of RBAC deployments, although in theory it would be possible to specify more fine-grained RBAC definitions than practically doable. In order to understand the true usefulness of ReBAC, however, let's dive into how the authorization state is specified! 
+ReBAC can be an effective tool combatting the [Roles Explosion][roles-explosion] phenomenon often seen in RBAC setups, practically limiting the usefulness of RBAC deployments, although in theory it would be possible to specify more fine-grained RBAC definitions than practically doable. In order to understand the true usefulness of ReBAC, however, let's dive into how the authorization state is specified! 
 
 ### Authorization Model
 
@@ -383,7 +412,7 @@ kubectl config use-context admin-user
 # Secret missioncritical
 # Secret very-secret
 # NOTE: No RBAC rules are changed here!
-kubectl apply -f deploy/node-demo.yaml
+kubectl apply -f deploy/node-pod-secret.yaml
 
 # Switch back to node context
 kubectl config use-context node-user
@@ -420,6 +449,14 @@ Features yet to be implemented:
 - Declarative CustomResourceDefinition Policy API
 - ABAC constraints (upcoming feature in OpenFGA)
 - Investigate synergies with kcp
+- Preventing Privilege Escalation
+  - For example, when a user adds a resource with links to other objects => a user should not be able to _get access_ to a `Secret` just by adding something it already has access to (e.g. an `Ingress`) with a link to that `Secret`
+  - This can be implemented with an admission controller
+- Related to Privilege Escalation, enforcing immutability of some inter-object links.
+  - This is to avoid mutating the authorization state when it should not be possible. For example, a Pod should probably not be able to change its Secret and Node references while running, but a new Pod should be created if such mutations are needed.
+  - This can be implemented with an admission controller
+- Add information on how to generate CA, server and client certificates for the demo
+- Add information on improvements to contribute upstream
 - And much more
 
 ## Request for Feedback!
@@ -428,27 +465,14 @@ The point of this project is to **gather feedback** and see how authorization fo
 
 ## Credits
 
-Thanks to Jon and Andres from the OpenFGA team that helped with questions about OpenFGA, and thanks to Jon for the Rejekts presentation together.
+Thanks to [Jonathan Whitaker](https://github.com/jon-whit) and [Andrés Aguiar](https://github.com/aaguiarz) from the OpenFGA team that helped with questions about OpenFGA, and thanks to Jonathan for the Rejekts presentation together.
 
 Project generated with [Kubebuilder](https://book.kubebuilder.io/introduction.html)
 
-The authorizion webhook implementation is heavily inspired by the authentication webhook in controller-runtime project. If desired by the community, I can contribute that part upstream.
+The authorizion webhook implementation is heavily inspired by the authentication webhook in [controller-runtime](https://github.com/kubernetes-sigs/controller-runtime) project. If desired by the community, I can contribute that part upstream.
 
 While the RBAC reconciliation code is not easily vendorable from Kubernetes, I need to carry an extracted version of the RBAC storage in a forked repo. This file is outside of the scope of the license and copyright of this project.
 
 ## License
 
-Copyright 2023. luxas labs Ltd.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
+[Apache 2.0](LICENSE)
