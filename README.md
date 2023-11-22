@@ -43,7 +43,12 @@ You can open an issue, star :star: this repo so I see you are interested, or rea
 
 ## What is Relation Based Access Control?
 
-ReBAC is an evolution of Role-Based Access Control and Attribute-Based Access Control, and was popularized by the [Google Zanzibar paper][zanzibar-paper]. The core idea is that the authorization state (who should have access to what) is modelled as a graph with **nodes** (for example, users and documents) and **relations** (directed edges) between them (user named `lucas` is related to document `secret` through the relation `read`).
+ReBAC is an evolution of Role-Based Access Control and Attribute-Based Access Control, and was popularized by the [Google Zanzibar paper][zanzibar-paper]. The core idea is that the authorization state (who can X do Y on resource Z) is modelled as a graph with **nodes** (for example, users and documents) and **relations** (directed edges) between them (user named `lucas` is related to document `secret` through the relation `read`).
+
+```mermaid
+graph LR
+  user:lucas -- read --> document:secret
+```
 
 A ReBAC service, like the CNCF project [OpenFGA][openfga] used here, provides an API to read and write what the authorization state looks like (what nodes and edges are there), define a schema/model for _how_ the graph can be built up, and for querying the graph (e.g. **does** this user node have access to this document node? or **what** documents does this user have access to through this relation?).
 
@@ -374,17 +379,17 @@ kubectl get pods -A -w
 
 kubectl config use-context admin-user
 
-# remove the "get" and "watch" verbs from the clusterrole, leave the "list"
+# remove the "list" and "watch" verbs from the clusterrole, leave the "get"
 EDITOR=nano kubectl edit clusterrole view-pods
 
 kubectl config use-context normal-user
 
-# allowed
-kubectl get pods
 # not anymore allowed
-kubectl get pods foo
+kubectl get pods
 # allowed
-kubectl get pods -A
+kubectl get pods foo
+# allowed, in any namespace
+kubectl -n sample-namespace get pods foo
 # not anymore allowed
 kubectl get pods -A -w
 ```
@@ -469,7 +474,7 @@ Thanks to [Jonathan Whitaker](https://github.com/jon-whit) and [Andrés Aguiar](
 
 Project generated with [Kubebuilder](https://book.kubebuilder.io/introduction.html)
 
-The authorizion webhook implementation is heavily inspired by the authentication webhook in [controller-runtime](https://github.com/kubernetes-sigs/controller-runtime) project. If desired by the community, I can contribute that part upstream.
+The authorization webhook implementation is heavily inspired by the authentication webhook in [controller-runtime](https://github.com/kubernetes-sigs/controller-runtime) project. If desired by the community, I can contribute that part upstream.
 
 While the RBAC reconciliation code is not easily vendorable from Kubernetes, I need to carry an extracted version of the RBAC storage in a forked repo. This file is outside of the scope of the license and copyright of this project.
 
